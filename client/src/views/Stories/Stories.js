@@ -111,6 +111,7 @@ const Stories = ({
     clearTimeout(updateTimer);
     clearTimeout(statusTimer);
     if (toBeCreated) {
+      // Create Story on first typing stop
       updateTimer = setTimeout(() => {
         Story.create(formValues, changes).then((res) => {
           setFormValues((prevData) => {
@@ -126,6 +127,7 @@ const Stories = ({
         setSaveStatus("Draft saving...");
       }, STATUS_INTERVAL);
     } else {
+      // Update story if typing stop
       updateTimer = setTimeout(() => {
         Story.update(formValues, changes).then((res) => {
           setSaveStatus(res.data.saveStatus);
