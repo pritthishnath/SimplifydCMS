@@ -10,7 +10,7 @@ CMS Integration for blog websites, currently under DEVELOPMENT.
  Run the npm installation
  ```
  npm install
- npm install-client
+ npm run install-client
  ```
  # Usage
  
