@@ -112,7 +112,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TableWithSorting = ({ rows, columns, loadingState, menuProps }) => {
+const TableWithSorting = ({ rows, columns, loadingState, menuOptions }) => {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("");
@@ -147,7 +147,7 @@ const TableWithSorting = ({ rows, columns, loadingState, menuProps }) => {
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
             columns={columns}
-            menu={menuProps ? true : false}
+            menu={menuOptions ? true : false}
           />
           <TableBody>
             {loadingState ? (
@@ -158,18 +158,18 @@ const TableWithSorting = ({ rows, columns, loadingState, menuProps }) => {
                 .map((row, index) => {
                   return (
                     <TableRow hover key={index}>
-                      {columns.map((column, index) => (
+                      {columns.map((column, i) => (
                         <TableCell
-                          key={index}
+                          key={i}
                           align={column.align ? column.align : "left"}>
                           {column.cell
                             ? column.cell(row)
                             : getCellData(row, column.selector)}
                         </TableCell>
                       ))}
-                      {menuProps && (
+                      {menuOptions && (
                         <TableCell align='right'>
-                          <Menu menuProps={menuProps} data={row} />
+                          <Menu menuOptions={menuOptions} data={row} />
                         </TableCell>
                       )}
                     </TableRow>
@@ -205,5 +205,5 @@ TableWithSorting.propTypes = {
   rows: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   loadingState: PropTypes.bool,
-  menuProps: PropTypes.object,
+  menuOptions: PropTypes.object,
 };

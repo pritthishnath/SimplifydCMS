@@ -11,8 +11,8 @@ import {
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 
-const MenuListComposition = ({ menuProps, data }) => {
-  const { buttons, setState } = menuProps;
+const MenuListComposition = ({ menuOptions, data }) => {
+  const { buttons, setState } = menuOptions;
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
 
@@ -73,7 +73,7 @@ const MenuListComposition = ({ menuProps, data }) => {
                   autoFocusItem={open}
                   id='menu-list-grow'
                   onKeyDown={handleListKeyDown}>
-                  {buttons.map((btn, i) => {
+                  {buttons?.map((btn, i) => {
                     if (btn.hidden) return "";
                     return (
                       <MenuItem key={i} onClick={btn.onClick}>
@@ -94,6 +94,6 @@ const MenuListComposition = ({ menuProps, data }) => {
 export default MenuListComposition;
 
 MenuListComposition.propTypes = {
-  menuProps: PropTypes.object,
+  menuOptions: PropTypes.object,
   data: PropTypes.any,
 };

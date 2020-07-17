@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TableWithTabs = ({ tabPanelsData, loadingState, menuProps }) => {
+const TableWithTabs = ({ tabPanelsData, loadingState, menuOptions }) => {
   const classes = useStyles();
   const [search, setSearch] = React.useState("");
   const [tabPanels, setTabPanels] = React.useState([]);
@@ -83,13 +83,13 @@ const TableWithTabs = ({ tabPanelsData, loadingState, menuProps }) => {
               rows={filteredData}
               columns={data.columnData}
               loadingState={loadingState}
-              menuProps={menuProps}
+              menuOptions={menuOptions}
             />
           ),
         };
       })
     );
-  }, [tabPanelsData, loadingState, search, menuProps]);
+  }, [tabPanelsData, loadingState, search, menuOptions]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -126,7 +126,7 @@ export default TableWithTabs;
 TableWithTabs.propTypes = {
   tabPanelsData: PropTypes.arrayOf(PropTypes.object).isRequired,
   loadingState: PropTypes.bool,
-  menuProps: PropTypes.object,
+  menuOptions: PropTypes.object,
 };
 
 // const tabPanels = tabPanelsData.map((data, index) => {

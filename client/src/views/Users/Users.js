@@ -76,6 +76,10 @@ const Users = ({ usersList, isLoading, currentUser, loadUsers, setAlert }) => {
       selector: "name",
     },
     {
+      label: "Username",
+      selector: "username",
+    },
+    {
       label: "E-Mail",
       selector: "email",
     },
@@ -126,6 +130,7 @@ const Users = ({ usersList, isLoading, currentUser, loadUsers, setAlert }) => {
         New User
       </Fab>
       <Dialog
+        form
         open={open}
         onClose={handleClose}
         title='New User'

@@ -3,7 +3,12 @@ import { connect } from "react-redux";
 import { Fab, makeStyles } from "@material-ui/core";
 import { AddCircle as AddCircleIcon } from "@material-ui/icons";
 
-import { TableWithTabs, FullScreenDialog } from "../../components";
+import {
+  TableWithTabs,
+  FullScreenDialog,
+  Dialog,
+  Table,
+} from "../../components";
 import StoryForm from "./components/StoryForm";
 import { loadStories, setAlert } from "../../store/actions";
 import { Story } from "../../shared/api-requests";
@@ -45,6 +50,7 @@ const Stories = ({
 }) => {
   const classes = useStyles();
 
+  //States and handlers related to StoryForm *****
   const [formValues, setFormValues] = React.useState(initialState);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [toBeCreated, setToBeCreated] = React.useState(true);
@@ -115,7 +121,11 @@ const Stories = ({
       updateTimer = setTimeout(() => {
         Story.create(formValues, changes).then((res) => {
           setFormValues((prevData) => {
-            return { ...prevData, _id: res.data._id, type: res.data.type };
+            return {
+              ...prevData,
+              _id: res.data._id,
+              type: res.data.type,
+            };
           });
           localStorage.setItem("id", res.data._id);
           localStorage.setItem("type", res.data.type);
@@ -148,7 +158,10 @@ const Stories = ({
       permalink: permalink,
     });
     if (dialogOpen) {
-      updateDocument({ [prop]: event.target.value, permalink: permalink });
+      updateDocument({
+        [prop]: event.target.value,
+        permalink: permalink,
+      });
     }
   };
 
@@ -159,6 +172,17 @@ const Stories = ({
     }
   };
 
+  // States and handlers related to table *****
+  const [updateHistOpen, setUpdateHistOpen] = React.useState(false);
+
+  const handleUpdateHistOpen = () => {
+    setUpdateHistOpen(true);
+  };
+
+  const handleUpdateHistClose = () => {
+    setUpdateHistOpen(false);
+  };
+
   const draftColumns = [
     {
       label: "Title",
@@ -167,6 +191,12 @@ const Stories = ({
     {
       label: "Created By",
       selector: "createdBy.name",
+    },
+    {
+      label: "Created At",
+      cell: (data) => {
+        return new Date(data.createdAt).toLocaleString();
+      },
     },
     {
       label: "Last Modified By",
@@ -182,6 +212,12 @@ const Stories = ({
     {
       label: "Created By",
       selector: "createdBy.name",
+    },
+    {
+      label: "Created At",
+      cell: (data) => {
+        return new Date(data.createdAt).toLocaleString();
+      },
     },
     {
       label: "Last Updated By",
@@ -206,7 +242,7 @@ const Stories = ({
     },
   ];
 
-  const menuProps = {
+  const menuOptions = {
     buttons: [
       {
         label: formValues.publicationId ? "Push Update" : "Publish",
@@ -221,11 +257,19 @@ const Stories = ({
         label: "Delete",
         onClick: deleteHandler(formValues.type, formValues._id),
       },
+      {
+        label: "View Update History",
+        onClick: handleUpdateHistOpen,
+        hidden:
+          formValues.type === "draft" || formValues.updateTimeline?.length < 1
+            ? true
+            : false,
+      },
     ],
     setState: setFormValues,
   };
 
-  const modalActions = [
+  const storyFormActions = [
     {
       label: "New",
       onClick: newHandler,
@@ -239,12 +283,26 @@ const Stories = ({
     },
   ];
 
+  const updateHistColumns = [
+    {
+      label: "Updated By",
+      selector: "updatedBy.name",
+    },
+    {
+      label: "Updated At",
+      cell: (data) => {
+        return new Date(data.updatedAt).toLocaleString();
+      },
+      align: "right",
+    },
+  ];
+
   return (
     <div className={classes.root}>
       <TableWithTabs
         tabPanelsData={tabPanelsData}
         loadingState={isLoading}
-        menuProps={menuProps}
+        menuOptions={menuOptions}
       />
       <Fab
         variant='extended'
@@ -258,13 +316,19 @@ const Stories = ({
         open={dialogOpen}
         onClose={handleDialogClose}
         title='New Story'
-        actions={modalActions}>
+        actions={storyFormActions}>
         <StoryForm
           formData={formValues}
           handlers={{ handleChange, handleEditorChange }}
           saveStatus={saveStatus}
         />
       </FullScreenDialog>
+      <Dialog
+        open={updateHistOpen}
+        onClose={handleUpdateHistClose}
+        title='Update History'>
+        <Table columns={updateHistColumns} rows={formValues?.updateTimeline} />
+      </Dialog>
     </div>
   );
 };

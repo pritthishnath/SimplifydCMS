@@ -7,33 +7,37 @@ import {
   DialogTitle,
 } from "@material-ui/core";
 
-export default function MuiDialog({
-  open,
-  onClose,
-  title,
-  actions,
-  children,
-  onSubmit,
-}) {
+const MuiDialog = ({ title, actions, children, onSubmit, form, ...props }) => {
   return (
-    <div>
-      <Dialog open={open} onClose={onClose} aria-labelledby='form-dialog-title'>
+    <React.Fragment>
+      <Dialog aria-labelledby='form-dialog-title' {...props}>
         <DialogTitle id='form-dialog-title'>{title}</DialogTitle>
-        <form onSubmit={onSubmit}>
-          <DialogContent>{children}</DialogContent>
-          <DialogActions>
-            {actions.map((action, index) => (
-              <Button
-                key={index}
-                onClick={action.onClick}
-                color='primary'
-                type={action.type}>
-                {action.label}
-              </Button>
-            ))}
-          </DialogActions>
-        </form>
+        {form ? (
+          <form onSubmit={onSubmit}>
+            <DialogContent>{children}</DialogContent>
+            <DialogActions>
+              {actions?.map((action, index) => (
+                <Button key={index} color='primary' {...action}>
+                  {action.label}
+                </Button>
+              ))}
+            </DialogActions>
+          </form>
+        ) : (
+          <React.Fragment>
+            <DialogContent>{children}</DialogContent>
+            <DialogActions>
+              {actions?.map((action, index) => (
+                <Button key={index} color='primary' {...action}>
+                  {action.label}
+                </Button>
+              ))}
+            </DialogActions>
+          </React.Fragment>
+        )}
       </Dialog>
-    </div>
+    </React.Fragment>
   );
-}
+};
+
+export default MuiDialog;

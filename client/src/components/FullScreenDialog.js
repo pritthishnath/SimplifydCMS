@@ -33,22 +33,12 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />;
 });
 
-export default function FullScreenDialog({
-  open,
-  onClose,
-  title,
-  actions,
-  children,
-}) {
+const FullScreenDialog = ({ title, actions, children, onClose, ...props }) => {
   const classes = useStyles();
 
   return (
-    <div>
-      <Dialog
-        fullScreen
-        open={open}
-        onClose={onClose}
-        TransitionComponent={Transition}>
+    <React.Fragment>
+      <Dialog fullScreen TransitionComponent={Transition} {...props}>
         <AppBar className={classes.appBar}>
           <Toolbar>
             <IconButton
@@ -61,12 +51,8 @@ export default function FullScreenDialog({
             <Typography variant='h6' className={classes.title}>
               {title}
             </Typography>
-            {actions.map((action, index) => (
-              <Button
-                key={index}
-                className={classes.button}
-                onClick={action.onClick}
-                disabled={action.disabled}>
+            {actions?.map((action, index) => (
+              <Button key={index} className={classes.button} {...action}>
                 {action.label}
               </Button>
             ))}
@@ -74,6 +60,8 @@ export default function FullScreenDialog({
         </AppBar>
         {children}
       </Dialog>
-    </div>
+    </React.Fragment>
   );
-}
+};
+
+export default FullScreenDialog;

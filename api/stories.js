@@ -171,7 +171,7 @@ router.get("/get-drafts", async (req, res) => {
 router.get("/get-publications", async (req, res) => {
   try {
     const publications = await Publication.find()
-      .populate("createdBy", ["name"])
+      .populate("createdBy", "name")
       .populate({
         path: "updateTimeline",
         populate: { path: "updatedBy", select: "name" },
