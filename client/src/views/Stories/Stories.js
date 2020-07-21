@@ -10,6 +10,7 @@ import {
   Table,
 } from "../../components";
 import StoryForm from "./components/StoryForm";
+import StoryDetails from "./components/StoryDetails";
 import { loadStories, setAlert } from "../../store/actions";
 import { Story } from "../../shared/api-requests";
 import { toKebabCase } from "../../shared/utility";
@@ -174,6 +175,7 @@ const Stories = ({
 
   // States and handlers related to table *****
   const [updateHistOpen, setUpdateHistOpen] = React.useState(false);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
 
   const handleUpdateHistOpen = () => {
     setUpdateHistOpen(true);
@@ -181,6 +183,14 @@ const Stories = ({
 
   const handleUpdateHistClose = () => {
     setUpdateHistOpen(false);
+  };
+
+  const handleDetailsOpen = (e) => {
+    setDetailsOpen(true);
+  };
+
+  const handleDetailsClose = () => {
+    setDetailsOpen(false);
   };
 
   const draftColumns = [
@@ -224,7 +234,7 @@ const Stories = ({
       cell: (data) => {
         return data.updateTimeline.length > 0
           ? data.updateTimeline[0].updatedBy.name
-          : "(not updated yet)";
+          : "(not updated)";
       },
     },
   ];
@@ -264,6 +274,10 @@ const Stories = ({
           formValues.type === "draft" || formValues.updateTimeline?.length < 1
             ? true
             : false,
+      },
+      {
+        label: "View Details",
+        onClick: handleDetailsOpen,
       },
     ],
     setState: setFormValues,
@@ -329,6 +343,12 @@ const Stories = ({
         title='Update History'>
         <Table columns={updateHistColumns} rows={formValues?.updateTimeline} />
       </Dialog>
+      <FullScreenDialog
+        open={detailsOpen}
+        onClose={handleDetailsClose}
+        title='Details'>
+        <StoryDetails state={formValues} />
+      </FullScreenDialog>
     </div>
   );
 };

@@ -46,8 +46,8 @@ export const loadUser = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: actions.AUTH_FAILURE,
-      payload: error.response.data.msg,
     });
+    dispatch(setAlert(error?.response?.data.msg || "Server Error", "error"));
   }
 };
 
@@ -71,7 +71,6 @@ export const authorize = (type, data) => (dispatch) => {
       dispatch({
         type: actions.AUTH_FAILURE,
       });
-      dispatch(setAlert(err.response.data.msg, "error"));
-      console.log(err.response.data);
+      dispatch(setAlert(err?.response?.data.msg || "Server Error", "error"));
     });
 };

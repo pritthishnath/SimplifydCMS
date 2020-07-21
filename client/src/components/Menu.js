@@ -65,7 +65,7 @@ const MenuListComposition = ({ menuOptions, data }) => {
             style={{
               transformOrigin: "top right",
               marginTop: -50,
-              marginRight: 40,
+              marginRight: 36,
             }}>
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>

@@ -13,7 +13,7 @@ router.post("/create-draft", async (req, res) => {
     title: req.body.title,
     permalink: req.body.permalink,
     content: req.body.content,
-    publicationId: req.body.publicationId ? req.body.publicationId : null,
+    publicationId: req.body.publicationId ? req.body.publicationId : "",
     createdBy: req.user.id,
     lastUpdatedBy: req.user.id,
     type: "draft",
@@ -82,10 +82,6 @@ router.post("/publish/:id", async (req, res) => {
     const permalinkExist = await Publication.findOne({
       permalink: draft.permalink,
     });
-    if (permalinkExist)
-      return res.status(403).json({
-        msg: "Permalink already exists, please create a unique permalink",
-      });
 
     // Checking if previously published
     if (draft.publicationId) {
@@ -104,6 +100,10 @@ router.post("/publish/:id", async (req, res) => {
       return res.status(200).json({ msg: "The publication is updated" });
     } else {
       // Creating new publication
+      if (permalinkExist)
+        return res.status(403).json({
+          msg: "Permalink already exists, please create a unique permalink",
+        });
       await Publication.create({
         ...updatedPublication,
         createdBy: currentUserId,

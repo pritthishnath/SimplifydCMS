@@ -14,9 +14,9 @@ export const loadUsers = () => (dispatch) => {
       });
     })
     .catch((error) => {
-      dispatch(setAlert(error.response.data.msg, "error"));
       dispatch({
         type: actions.USERS_LOADING_FAILURE,
       });
+      dispatch(setAlert(error?.response?.data.msg || "Server Error", "error"));
     });
 };

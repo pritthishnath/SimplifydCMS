@@ -35,32 +35,35 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const FullScreenDialog = ({ title, actions, children, onClose, ...props }) => {
   const classes = useStyles();
+  const dialog = React.useRef();
 
   return (
-    <React.Fragment>
-      <Dialog fullScreen TransitionComponent={Transition} {...props}>
-        <AppBar className={classes.appBar}>
-          <Toolbar>
-            <IconButton
-              edge='start'
-              color='inherit'
-              onClick={onClose}
-              aria-label='close'>
-              <CloseIcon />
-            </IconButton>
-            <Typography variant='h6' className={classes.title}>
-              {title}
-            </Typography>
-            {actions?.map((action, index) => (
-              <Button key={index} className={classes.button} {...action}>
-                {action.label}
-              </Button>
-            ))}
-          </Toolbar>
-        </AppBar>
-        {children}
-      </Dialog>
-    </React.Fragment>
+    <Dialog
+      fullScreen
+      TransitionComponent={Transition}
+      onEscapeKeyDown={onClose}
+      {...props}>
+      <AppBar className={classes.appBar}>
+        <Toolbar>
+          <IconButton
+            edge='start'
+            color='inherit'
+            onClick={onClose}
+            aria-label='close'>
+            <CloseIcon />
+          </IconButton>
+          <Typography variant='h6' className={classes.title}>
+            {title}
+          </Typography>
+          {actions?.map((action, index) => (
+            <Button key={index} className={classes.button} {...action}>
+              {action.label}
+            </Button>
+          ))}
+        </Toolbar>
+      </AppBar>
+      {children}
+    </Dialog>
   );
 };
 

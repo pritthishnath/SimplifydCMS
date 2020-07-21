@@ -17,9 +17,9 @@ export const loadStories = () => (dispatch) => {
       });
     })
     .catch((error) => {
-      dispatch(setAlert(error.response.data.msg, "error"));
       dispatch({
         type: actions.STORIES_LOADING_FAILURE,
       });
+      dispatch(setAlert(error?.response?.data.msg || "Server Error", "error"));
     });
 };
