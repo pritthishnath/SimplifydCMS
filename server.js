@@ -21,7 +21,7 @@ app.use(express.json({ extended: false }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(cookieParser(process.env.COOKIE_SECRET));
-// app.use(cookieEncrypter(process.env.COOKIE_SECRET));
+app.use(cookieEncrypter(process.env.COOKIE_SECRET));
 app.use(
   session({
     secret: process.env.SESS_SECRET,

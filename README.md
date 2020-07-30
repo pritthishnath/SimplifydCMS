@@ -20,12 +20,11 @@ npm run install-client
 
 # Usage
 
-Create a .env file and declare the MongoDB connection string and your JWT secret,
-
-Set the keys as,
+Create a .env file and declare the following keys and their values,
 
 1.  MONGO_URI
-2.  JWT_SECRET
+2.  SESS_SECRET
+3.  COOKIE_SECRET
 
 Start the development server and APIs,
 
