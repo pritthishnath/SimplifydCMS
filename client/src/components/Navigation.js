@@ -4,9 +4,6 @@ import { NavLink } from "react-router-dom";
 import { List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 
 const Navigation = ({ links, customStyles }) => {
-  const handleUrl = (url) => () => {
-    localStorage.setItem("admin_url", url);
-  };
   const data = links.map((link, index) => {
     return (
       <NavLink
@@ -14,10 +11,7 @@ const Navigation = ({ links, customStyles }) => {
         to={`${link.url}`}
         className={customStyles.listLink}
         activeClassName={customStyles.active}>
-        <ListItem
-          button
-          className={customStyles.listItem}
-          onClick={handleUrl(link.url)}>
+        <ListItem button className={customStyles.listItem}>
           <ListItemIcon className={customStyles.listIcon}>
             {link.icon()}
           </ListItemIcon>

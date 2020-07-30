@@ -33,7 +33,7 @@ const initialState = {
   password: "",
 };
 
-const Login = ({ isAuth, authorize }) => {
+const Login = ({ authorize }) => {
   const classes = useStyles();
 
   const [formData, setFormData] = React.useState(initialState);
@@ -122,8 +122,4 @@ const Login = ({ isAuth, authorize }) => {
   );
 };
 
-const mapState = (state) => ({
-  isAuth: state.auth.isAuth,
-});
-
-export default connect(mapState, { authorize })(Login);
+export default connect(null, { authorize })(Login);

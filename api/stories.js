@@ -13,9 +13,9 @@ router.post("/create-draft", async (req, res) => {
     title: req.body.title,
     permalink: req.body.permalink,
     content: req.body.content,
-    publicationId: req.body.publicationId ? req.body.publicationId : "",
-    createdBy: req.user.id,
-    lastUpdatedBy: req.user.id,
+    publicationId: req.body.publicationId ? req.body.publicationId : null,
+    createdBy: req.session.userId,
+    lastUpdatedBy: req.session.userId,
     type: "draft",
   };
 
@@ -47,14 +47,14 @@ router.put("/:id/edit", async (req, res) => {
         permalink: req.body.permalink,
         content: req.body.content,
         publicationId: req.body.publicationId ? req.body.publicationId : null,
-        lastUpdatedBy: req.user.id,
+        lastUpdatedBy: req.session.userId,
         type: "draft",
       },
     });
     res.status(200).json({ saveStatus: "Draft saved" });
   } catch (err) {
-    res.status(400).json({
-      msg: err.message,
+    res.status(500).json({
+      msg: "Server Error",
     });
   }
 });
@@ -64,7 +64,7 @@ router.put("/:id/edit", async (req, res) => {
 
 router.post("/publish/:id", async (req, res) => {
   // Get token payload
-  const currentUserId = req.user.id;
+  const currentUserId = req.session.userId;
 
   // Get the draft to be published
   const draftId = req.params.id;
@@ -218,7 +218,7 @@ router.delete("/delete-publication/:id", async (req, res) => {
 router.put("/:publicationId/add-comment", async (req, res) => {
   const newComment = {
     text: req.body.text,
-    createdBy: req.user.id,
+    createdBy: req.session.userId,
   };
   try {
     await Publication.findOneAndUpdate(

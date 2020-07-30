@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { makeStyles, fade } from "@material-ui/core/styles";
 import {
@@ -9,11 +10,14 @@ import {
   Typography,
   Divider,
   Button,
+  Chip,
+  Box,
 } from "@material-ui/core";
 import {
   People as PeopleIcon,
   MenuBook as MenuBookIcon,
 } from "@material-ui/icons";
+import Cookie from "js-cookie";
 
 import { Navigation, Spinner } from "../components";
 import { authLogout } from "../store/actions";
@@ -28,9 +32,15 @@ const useStyles = makeStyles((theme) => ({
     width: `calc(100% - ${drawerWidth}px)`,
     marginLeft: drawerWidth,
   },
-  title: {
+  authUserInfo: {
     // marginLeft: theme.spacing(2),
     flex: 1,
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    "& h6": {
+      marginRight: theme.spacing(1),
+    },
   },
   button: {
     backgroundColor: fade(theme.palette.grey[200], 0.25),
@@ -103,22 +113,25 @@ const links = [
   {
     name: "Users",
     icon: () => <PeopleIcon />,
-    url: "/admin/users",
+    url: "/admin/al/users",
   },
   {
     name: "Stories",
     icon: () => <MenuBookIcon />,
-    url: "/admin/stories",
+    url: "/admin/al/stories",
   },
 ];
 
 const AdminLayout = ({ isLoading, authLogout, children, currentUser }) => {
   const classes = useStyles();
   const sidebarStyles = useSidebarStyles();
+  const user = Cookie.get("user");
 
   const logOut = () => (event) => {
     authLogout();
   };
+
+  if (!user) return <Redirect to='/login' />;
 
   if (isLoading || !currentUser) return <Spinner />;
 
@@ -127,9 +140,12 @@ const AdminLayout = ({ isLoading, authLogout, children, currentUser }) => {
       <CssBaseline />
       <AppBar position='fixed' className={classes.appBar}>
         <Toolbar>
-          <Typography variant='h6' noWrap className={classes.title}>
-            Welcome, {currentUser.name}
-          </Typography>
+          <Box className={classes.authUserInfo}>
+            <Typography variant='h6' noWrap>
+              Welcome, {currentUser.name}
+            </Typography>
+            <Chip label={currentUser.role} size='small' />
+          </Box>
           <Button className={classes.button} onClick={logOut()}>
             Log Out
           </Button>

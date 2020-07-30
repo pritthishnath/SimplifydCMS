@@ -67,17 +67,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StoryDetails = ({ state, setState }) => {
+const StoryDetails = ({ story }) => {
   const classes = useStyles();
 
   let updateInfo, commentsInfo;
 
-  if (state.type === "publication") {
+  if (story.type === "publication") {
     updateInfo = (
       <Typography>
         Updated on{" "}
-        <i>{new Date(state.updateTimeline?.[0].updatedAt).toDateString()} </i>
-        by {state.updateTimeline?.[0].updatedBy.name}
+        <i>{new Date(story.updateTimeline?.[0].updatedAt).toDateString()} </i>
+        by {story.updateTimeline?.[0].updatedBy.name}
       </Typography>
     );
     commentsInfo = (
@@ -85,7 +85,7 @@ const StoryDetails = ({ state, setState }) => {
         <Typography variant='h5' component='h5'>
           <strong>Comments</strong>
         </Typography>
-        {state.comments?.map((comment, i) => {
+        {story.comments?.map((comment, i) => {
           return (
             <Paper
               key={comment._id}
@@ -117,22 +117,22 @@ const StoryDetails = ({ state, setState }) => {
   return (
     <Box mx={30} my={4}>
       <Typography className={classes.title} variant='h2' gutterBottom>
-        {state.title}
+        {story.title}
       </Typography>
       <div className={classes.userInfoWrapper}>
         <AccountCircleIcon className={classes.icon} />
         <div className={classes.userInfo}>
           <Typography>
-            By {state.createdBy.name} on{" "}
-            <i>{new Date(state.createdAt).toDateString()}</i>{" "}
-            {state.comments ? `| ${state.comments.length} Comments` : ""}
+            By {story.createdBy.name} on{" "}
+            <i>{new Date(story.createdAt).toDateString()}</i>{" "}
+            {story.comments ? `| ${story.comments.length} Comments` : ""}
           </Typography>
           {updateInfo}
         </div>
       </div>
       <div
         className={classes.content}
-        dangerouslySetInnerHTML={{ __html: state.content }}></div>
+        dangerouslySetInnerHTML={{ __html: story.content }}></div>
       {commentsInfo}
     </Box>
   );

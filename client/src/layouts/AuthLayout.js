@@ -7,6 +7,8 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import Cookie from "js-cookie";
+
 import { Spinner } from "../components";
 
 function Copyright() {
@@ -36,11 +38,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AuthLayout = ({ children, isLoading, isAuth }) => {
+const AuthLayout = ({ children, isLoading }) => {
   const classes = useStyles();
+  const user = Cookie.get("user");
 
   if (isLoading) return <Spinner />;
-  if (isAuth) return <Redirect to='/admin/users' />;
+  if (user) return <Redirect to='/admin/al/users' />;
 
   return (
     <Container component='main' maxWidth='xs'>
@@ -59,7 +62,6 @@ const AuthLayout = ({ children, isLoading, isAuth }) => {
 
 const mapState = (state) => ({
   isLoading: state.auth.isLoading,
-  isAuth: state.auth.isAuth,
 });
 
 export default connect(mapState)(AuthLayout);

@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const csrfProtection = require("../middlewares/csrfProtection");
+const verifyUser = require("../middlewares/verifyUser");
 
 // @route  POST /api/auth/register
 // @desc   Register as an Admin
@@ -35,24 +36,17 @@ router.post("/register", async (req, res) => {
     };
 
     await User.create(newUser, (err, user) => {
-      const payload = {
-        user: {
-          id: user._id,
-        },
-      };
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: 3600 },
-        (err, token) => {
-          if (err) throw err;
-          return res.status(200).json({
-            msg: "Group and User created",
-            token: token,
-            expiresIn: 3600,
-          });
-        }
-      );
+      req.session.userId = user._id;
+
+      const userInfo = JSON.stringify({ user: user.username, role: user.role });
+
+      res
+        .status(200)
+        .cookie("user", userInfo, { maxAge: 1296000 * 1000 })
+        .json({
+          msg: "Registration Successful",
+          expiresOn: 1296000, // 15 days in seconds
+        });
     });
   } catch (err) {
     return res.status(500).send("Server error");
@@ -65,39 +59,77 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [{ email: req.body.email }, { username: req.body.email }],
     });
-    if (!user) return res.status(404).json({ msg: "Invalid Credentials" });
 
+    if (!user) return res.status(404).json({ msg: "Invalid Credentials" });
     const validPassword = await bcrypt.compare(
       req.body.password,
       user.password
     );
+
     if (!validPassword)
       return res.status(401).json({ msg: "Invalid Password" });
 
-    // console.log(Date().now().toString());
-    const payload = {
-      user: {
-        id: user._id,
-      },
-    };
+    req.session.userId = user._id;
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        return res
-          .status(200)
-          .json({ msg: "Logged In", token: token, expiresIn: 3600 });
-      }
-    );
+    const userInfo = JSON.stringify({ user: user.username, role: user.role });
+
+    res
+      .status(200)
+      .cookie("user", userInfo, { maxAge: 1296000 * 1000 })
+      .json({
+        msg: "Logged In",
+        expiresOn: 1296000, // 15 days in seconds
+      });
   } catch (err) {
     res.status(500).send("Server Error");
   }
+});
+
+// @route  GET /api/auth/get-current-user
+// @desc   Get current logged in user data
+// @access Private
+
+router.get(
+  "/get-current-user",
+  verifyUser,
+  csrfProtection,
+  async (req, res) => {
+    // Get token value
+    const userId = req.session.userId;
+
+    try {
+      const user = await User.findById(userId).select("-password");
+      return res.status(200).json({
+        user,
+        csrfToken: req.csrfToken(),
+      });
+    } catch (err) {
+      return res.status(500).json({ msg: "Server Error" });
+    }
+  }
+);
+
+// @route  POST /api/auth/logout
+// @desc   Get current user logget out
+// @access Private / Not Protected
+
+router.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) throw err;
+    res
+      .clearCookie("sid")
+      .clearCookie("_csrf")
+      .clearCookie("user")
+      .status(200)
+      .json({ msg: "Logged Out" });
+  });
+});
+
+router.post("/csrfCheck", verifyUser, csrfProtection, (req, res) => {
+  res.status(200).json({ msg: "Success", token: req.csrfToken() });
 });
 
 module.exports = router;

@@ -7,10 +7,7 @@ const Editor = ({ content, onEditorChange, onChange }) => {
 
     xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
-    xhr.open(
-      "POST",
-      `/api/tinymce-upload-image?key=${localStorage.getItem("jwt_token")}`
-    );
+    xhr.open("POST", `/api/tinymce-upload-image`);
 
     xhr.upload.onprogress = function (e) {
       progress((e.loaded / e.total) * 100);
@@ -31,7 +28,7 @@ const Editor = ({ content, onEditorChange, onChange }) => {
         return;
       }
 
-      success(`${json.location}?key=${localStorage.getItem("jwt_token")}`);
+      success(`${json.location}`);
     };
 
     xhr.onerror = function () {

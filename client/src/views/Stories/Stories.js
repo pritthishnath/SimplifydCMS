@@ -10,7 +10,7 @@ import {
   Table,
 } from "../../components";
 import StoryForm from "./components/StoryForm";
-import StoryDetails from "./components/StoryDetails";
+import StoryDetails from "../StoryDetails/StoryDetails";
 import { loadStories, setAlert } from "../../store/actions";
 import { Story } from "../../shared/api-requests";
 import { toKebabCase } from "../../shared/utility";
@@ -36,7 +36,6 @@ const UPDATE_INTERVAL = 1000;
 const STATUS_INTERVAL = 500;
 
 const initialState = {
-  _id: "",
   title: "",
   permalink: "",
   content: "",
@@ -52,17 +51,26 @@ const Stories = ({
   const classes = useStyles();
 
   //States and handlers related to StoryForm *****
-  const [formValues, setFormValues] = React.useState(initialState);
+  const [activeStory, setActiveStory] = React.useState(initialState);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [toBeCreated, setToBeCreated] = React.useState(true);
   const [saveStatus, setSaveStatus] = React.useState("");
+
+  React.useEffect(() => {
+    if (!dialogOpen) {
+      if (localStorage.id) {
+        localStorage.removeItem("id");
+        localStorage.removeItem("type");
+      }
+    }
+  }, [dialogOpen]);
 
   const handleDialogOpen = () => {
     setDialogOpen(true);
   };
   const handleDialogClose = () => {
     setDialogOpen(false);
-    setFormValues(initialState);
+    setActiveStory(initialState);
     setToBeCreated(true);
     setSaveStatus("");
     if (localStorage.id) {
@@ -73,7 +81,7 @@ const Stories = ({
   };
 
   const newHandler = () => {
-    setFormValues(initialState);
+    setActiveStory(initialState);
     if (!dialogOpen) setDialogOpen(true);
     setToBeCreated(true);
     setSaveStatus("");
@@ -96,10 +104,10 @@ const Stories = ({
 
   const editHandler = (data) => (e) => {
     if (data.type === "draft") {
-      setFormValues(data);
+      setActiveStory(data);
       setToBeCreated(false);
     } else {
-      setFormValues({ ...data, publicationId: data._id });
+      setActiveStory({ ...data, publicationId: data._id });
     }
     localStorage.setItem("id", data._id);
     localStorage.setItem("type", data.type);
@@ -120,8 +128,8 @@ const Stories = ({
     if (toBeCreated) {
       // Create Story on first typing stop
       updateTimer = setTimeout(() => {
-        Story.create(formValues, changes).then((res) => {
-          setFormValues((prevData) => {
+        Story.create(activeStory, changes).then((res) => {
+          setActiveStory((prevData) => {
             return {
               ...prevData,
               _id: res.data._id,
@@ -140,7 +148,7 @@ const Stories = ({
     } else {
       // Update story if typing stop
       updateTimer = setTimeout(() => {
-        Story.update(formValues, changes).then((res) => {
+        Story.update(activeStory, changes).then((res) => {
           setSaveStatus(res.data.saveStatus);
         });
       }, UPDATE_INTERVAL);
@@ -152,9 +160,11 @@ const Stories = ({
 
   const handleChange = (prop) => (event) => {
     let permalink =
-      prop === "title" ? toKebabCase(event.target.value) : formValues.permalink;
-    setFormValues({
-      ...formValues,
+      prop === "title"
+        ? toKebabCase(event.target.value)
+        : activeStory.permalink;
+    setActiveStory({
+      ...activeStory,
       [prop]: event.target.value,
       permalink: permalink,
     });
@@ -167,7 +177,7 @@ const Stories = ({
   };
 
   const handleEditorChange = (content) => {
-    setFormValues({ ...formValues, content: content });
+    setActiveStory({ ...activeStory, content: content });
     if (dialogOpen) {
       updateDocument({ content: content });
     }
@@ -185,7 +195,12 @@ const Stories = ({
     setUpdateHistOpen(false);
   };
 
-  const handleDetailsOpen = (e) => {
+  const detailsPageOpen = (permalink) => (e) => {
+    const origin = window.location.origin;
+    window.open(`${origin}/admin/story/${permalink}`, "Story");
+  };
+
+  const handleDetailsOpen = () => (e) => {
     setDetailsOpen(true);
   };
 
@@ -193,6 +208,7 @@ const Stories = ({
     setDetailsOpen(false);
   };
 
+  // Child props & options declarations ***
   const draftColumns = [
     {
       label: "Title",
@@ -255,45 +271,48 @@ const Stories = ({
   const menuOptions = {
     buttons: [
       {
-        label: formValues.publicationId ? "Push Update" : "Publish",
-        onClick: publishHandler(formValues._id),
-        hidden: formValues.type === "publication" ? true : false,
+        label: activeStory.publicationId ? "Push Update" : "Publish",
+        onClick: publishHandler(activeStory._id),
+        hidden: activeStory.type === "publication" ? true : false,
       },
       {
         label: "Edit",
-        onClick: editHandler(formValues),
+        onClick: editHandler(activeStory),
       },
       {
         label: "Delete",
-        onClick: deleteHandler(formValues.type, formValues._id),
+        onClick: deleteHandler(activeStory.type, activeStory._id),
       },
       {
-        label: "View Update History",
+        label: "Update History",
         onClick: handleUpdateHistOpen,
         hidden:
-          formValues.type === "draft" || formValues.updateTimeline?.length < 1
+          activeStory.type === "draft" || activeStory.updateTimeline?.length < 1
             ? true
             : false,
       },
       {
-        label: "View Details",
-        onClick: handleDetailsOpen,
+        label: "Preview",
+        onClick:
+          activeStory.type === "publication"
+            ? detailsPageOpen(activeStory.permalink)
+            : handleDetailsOpen(),
       },
     ],
-    setState: setFormValues,
+    setState: setActiveStory,
   };
 
   const storyFormActions = [
     {
       label: "New",
       onClick: newHandler,
-      disabled: formValues._id ? false : true,
+      disabled: activeStory._id ? false : true,
     },
     {
       label: "Publish",
-      onClick: publishHandler(formValues._id),
+      onClick: publishHandler(activeStory._id),
       disabled:
-        formValues._id && formValues.type !== "publication" ? false : true,
+        activeStory._id && activeStory.type !== "publication" ? false : true,
     },
   ];
 
@@ -332,7 +351,7 @@ const Stories = ({
         title='New Story'
         actions={storyFormActions}>
         <StoryForm
-          formData={formValues}
+          formData={activeStory}
           handlers={{ handleChange, handleEditorChange }}
           saveStatus={saveStatus}
         />
@@ -341,13 +360,13 @@ const Stories = ({
         open={updateHistOpen}
         onClose={handleUpdateHistClose}
         title='Update History'>
-        <Table columns={updateHistColumns} rows={formValues?.updateTimeline} />
+        <Table columns={updateHistColumns} rows={activeStory?.updateTimeline} />
       </Dialog>
       <FullScreenDialog
         open={detailsOpen}
         onClose={handleDetailsClose}
         title='Details'>
-        <StoryDetails state={formValues} />
+        <StoryDetails story={activeStory} />
       </FullScreenDialog>
     </div>
   );

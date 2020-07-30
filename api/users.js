@@ -3,21 +3,6 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../models/User");
 
-// @route  GET /api/users/get-current-user
-// @desc   Get current logged in user data
-
-router.get("/get-current-user", async (req, res) => {
-  // Get token value
-  const userId = req.user.id;
-
-  try {
-    const user = await User.findById(userId).select("-password");
-    return res.status(200).json(user);
-  } catch (err) {
-    return res.status(500).json({ msg: "Server Error" });
-  }
-});
-
 // @route  POST /api/users/create-user
 // @desc   Create a User
 
@@ -36,6 +21,7 @@ router.post("/create-user", async (req, res) => {
   // Creating user
   const user = {
     name: req.body.name,
+    username: req.body.username,
     email: req.body.email,
     password: hashedPassword,
     role: req.body.role,

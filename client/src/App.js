@@ -1,13 +1,15 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { blueGrey } from "@material-ui/core/colors";
+import Cookie from "js-cookie";
 
-import Admin from "./routes/Admin";
+import PrivateRoute from "./hoc/PrivateRoute";
+import AdminRoutes from "./routes/Admin";
 import { LoginView, RegisterView } from "./views";
 import { Alert } from "./components";
-import { loadUser } from "./store/actions";
+import { authLogout } from "./store/actions";
 
 const theme = createMuiTheme({
   typography: {
@@ -15,20 +17,23 @@ const theme = createMuiTheme({
   },
   palette: {
     primary: {
-      main: "#1a237e",
-      light: "#474f97",
-      dark: "#121858",
+      main: "#283593",
+      light: "#535da8",
+      dark: "#1c2566",
     },
     grey: blueGrey,
   },
 });
 
-const App = ({ isAuth, loadUser }) => {
+const App = ({ authLogout }) => {
+  const user = Cookie.get("user");
   React.useEffect(() => {
-    if (localStorage.jwt_token) {
-      loadUser();
+    if (!user) {
+      if (localStorage.expirationDate) {
+        authLogout();
+      }
     }
-  }, [loadUser]);
+  }, [user, authLogout]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -39,18 +44,10 @@ const App = ({ isAuth, loadUser }) => {
         </Route>
         <Route path='/login' component={LoginView} />
         <Route path='/register' component={RegisterView} />
-        {isAuth ? (
-          <Route path='/admin' component={Admin} />
-        ) : (
-          <Redirect to='/login' />
-        )}
+        <PrivateRoute path='/admin' component={AdminRoutes} />
       </Switch>
     </ThemeProvider>
   );
 };
 
-const mapState = (state) => ({
-  isAuth: state.auth.isAuth,
-});
-
-export default connect(mapState, { loadUser })(App);
+export default connect(null, { authLogout })(App);

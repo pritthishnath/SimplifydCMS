@@ -1,22 +1,28 @@
 import React from "react";
-import { useRouteMatch, Switch, Route, Redirect } from "react-router-dom";
+import { useRouteMatch, Switch, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+import Cookie from "js-cookie";
 
-import { AdminLayout } from "../layouts";
-import { UsersView, StoriesView } from "../views";
-import { loadUsers, loadStories } from "../store/actions";
+import RouteWithLayout from "../hoc/RouteWithLayout";
+import { AdminLayout, StoryPreviewLayout } from "../layouts";
+import { UsersView, StoriesView, StoryDetailsView } from "../views";
+import { loadUsers, loadStories, loadUser, authLogout } from "../store/actions";
 
-const Admin = ({ currentUser, loadUsers, loadStories }) => {
+const Admin = ({
+  currentUser,
+  publications,
+  loadUser,
+  loadUsers,
+  loadStories,
+}) => {
   const { path } = useRouteMatch();
-
   React.useEffect(() => {
-    if (!localStorage.admin_url) {
-      localStorage.setItem("admin_url", "/admin/users");
+    const user = Cookie.get("user");
+    if (user) {
+      loadUser();
     }
-    return () => {
-      localStorage.removeItem("admin_url");
-    };
-  }, []);
+  }, [loadUser]);
+
   React.useEffect(() => {
     if (currentUser) {
       loadUsers();
@@ -25,27 +31,45 @@ const Admin = ({ currentUser, loadUsers, loadStories }) => {
   }, [loadUsers, currentUser, loadStories]);
 
   return (
-    <AdminLayout>
-      <Redirect
-        to={
-          localStorage.admin_url
-            ? localStorage.getItem("admin_url")
-            : `/admin/users`
-        }
-      />
+    <React.Fragment>
+      {window.location.pathname === "/admin" && (
+        <Redirect to='/admin/al/users' />
+      )}
       <Switch>
-        <Route path={`${path}/users`} component={UsersView} />
-        <Route path={`${path}/stories`} component={StoriesView} />
+        <RouteWithLayout
+          path={`${path}/al/users`}
+          component={UsersView}
+          layout={AdminLayout}
+        />
+        <RouteWithLayout
+          path={`${path}/al/stories`}
+          component={StoriesView}
+          layout={AdminLayout}
+        />
+        {publications.map((pub) => (
+          <RouteWithLayout
+            key={pub._id}
+            path={`${path}/story/${pub.permalink}`}
+            layout={StoryPreviewLayout}>
+            <StoryDetailsView story={pub} />
+          </RouteWithLayout>
+        ))}
         {/* <Route path={`${path}/*`}>
           <Redirect to={`${path}/users`} />
         </Route> */}
       </Switch>
-    </AdminLayout>
+    </React.Fragment>
   );
 };
 
 const mapState = (state) => ({
   currentUser: state.auth.currentUser,
+  publications: state.stories.publications,
 });
 
-export default connect(mapState, { loadUsers, loadStories })(Admin);
+export default connect(mapState, {
+  loadUser,
+  loadUsers,
+  loadStories,
+  authLogout,
+})(Admin);

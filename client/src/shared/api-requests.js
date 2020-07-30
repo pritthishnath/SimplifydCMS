@@ -1,12 +1,21 @@
 import axios from "axios";
 
-export const User = {
+export const Auth = {
   authorize: async (type, data) => {
     return await axios.post(`/api/auth/${type}`, data);
   },
   getCurrentUser: async () => {
-    return await axios.get(`/api/users/get-current-user`);
+    return await axios.get(`/api/auth/get-current-user`);
   },
+  renewTokens: async () => {
+    return await axios.post(`/api/auth/renew`);
+  },
+  logout: async () => {
+    return await axios.post(`/api/auth/logout`);
+  },
+};
+
+export const User = {
   create: async (data) => {
     return await axios.post(`/api/users/create-user`, data);
   },

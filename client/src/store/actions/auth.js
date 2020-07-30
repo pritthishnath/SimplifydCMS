@@ -1,6 +1,5 @@
 import * as actions from "./actionTypes";
-import { User } from "../../shared/api-requests";
-import setAuthHeader from "../../shared/setAuthHeader";
+import { Auth } from "../../shared/api-requests";
 import { setAlert } from ".";
 
 export const authStart = () => {
@@ -9,19 +8,17 @@ export const authStart = () => {
   };
 };
 
-export const authLogout = () => {
-  localStorage.removeItem("jwt_token");
+export const authLogout = () => (dispatch) => {
   localStorage.removeItem("expirationDate");
-  setAuthHeader(null);
-  return {
-    type: actions.AUTH_LOGOUT,
-  };
-};
-
-export const setAuthTimeout = (expiresIn) => (dispatch) => {
-  setTimeout(() => {
-    dispatch(authLogout());
-  }, expiresIn * 1000);
+  Auth.logout()
+    .then(() => {
+      dispatch({
+        type: actions.AUTH_LOGOUT,
+      });
+    })
+    .catch((err) => {
+      dispatch(setAlert(err?.response?.data.msg || "Server Error", "error"));
+    });
 };
 
 export const checkAuthState = () => (dispatch) => {
@@ -34,11 +31,8 @@ export const checkAuthState = () => (dispatch) => {
 export const loadUser = () => async (dispatch) => {
   dispatch(authStart());
   dispatch(checkAuthState());
-  if (localStorage.jwt_token) {
-    setAuthHeader(localStorage.getItem("jwt_token"));
-  }
   try {
-    const res = await User.getCurrentUser();
+    const res = await Auth.getCurrentUser();
     dispatch({
       type: actions.AUTH_USER_LOADED,
       payload: res.data,
@@ -53,19 +47,17 @@ export const loadUser = () => async (dispatch) => {
 
 export const authorize = (type, data) => (dispatch) => {
   dispatch(authStart());
-  User.authorize(type, data)
+  Auth.authorize(type, data)
     .then((res) => {
+      // setExpiration(res.data.expiresIn);
       const expirationDate = new Date(
-        new Date().getTime() + res.data.expiresIn * 1000
+        new Date().getTime() + res.data.expiresOn * 1000
       );
-      localStorage.setItem("jwt_token", res.data.token);
       localStorage.setItem("expirationDate", expirationDate);
       dispatch({
         type: actions.AUTH_SUCCESS,
-        payload: res.data,
       });
       dispatch(loadUser());
-      dispatch(setAuthTimeout(res.data.expiresIn));
     })
     .catch((err) => {
       dispatch({
